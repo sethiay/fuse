@@ -154,7 +154,12 @@ func (c *Connection) Init() error {
 
 	// Respond to the init op.
 	initOp.Library = c.protocol
-	initOp.MaxReadahead = maxReadahead
+	// Use default maxReadahead if not explicitly passed.
+	if c.cfg.MaxReadAhead == 0 {
+		initOp.MaxReadahead = maxReadahead
+	} else {
+		initOp.MaxReadahead = uint32(c.cfg.MaxReadAhead)
+	}
 	initOp.MaxWrite = buffer.MaxWriteSize
 
 	initOp.Flags = 0
@@ -168,7 +173,11 @@ func (c *Connection) Init() error {
 
 	// kernel 4.20 increases the max from 32 -> 256
 	initOp.Flags |= fusekernel.InitMaxPages
-	initOp.MaxPages = 256
+	if c.cfg.MaxReadPages == 0 {
+		initOp.MaxPages = 256
+	} else {
+		initOp.MaxPages = uint16(c.cfg.MaxReadPages)
+	}
 
 	// Enable writeback caching if the user hasn't asked us not to.
 	if !c.cfg.DisableWritebackCaching {
