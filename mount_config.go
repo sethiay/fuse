@@ -198,6 +198,9 @@ type MountConfig struct {
 	// kernel
 	// Ref: https://github.com/torvalds/linux/commit/5c672ab3f0ee0f78f7acad183f34db0f8781a200
 	EnableParallelDirOps bool
+
+	MaxReadAhead int64
+	MaxReadPages int
 }
 
 type FUSEImpl uint8
