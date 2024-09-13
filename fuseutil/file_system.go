@@ -63,6 +63,7 @@ type FileSystem interface {
 	ListXattr(context.Context, *fuseops.ListXattrOp) error
 	SetXattr(context.Context, *fuseops.SetXattrOp) error
 	Fallocate(context.Context, *fuseops.FallocateOp) error
+	SyncFS(context.Context, *fuseops.SyncFSOp) error
 
 	// Regard all inodes (including the root inode) as having their lookup counts
 	// decremented to zero, and clean up any resources associated with the file
@@ -81,8 +82,8 @@ type FileSystem interface {
 //
 // (It is safe to naively process ops concurrently because the kernel
 // guarantees to serialize operations that the user expects to happen in order,
-// cf. http://goo.gl/jnkHPO, fuse-devel thread "Fuse guarantees on concurrent
-// requests").
+// cf. https://tinyurl.com/bddm85v5, fuse-devel thread "Fuse guarantees on
+// concurrent requests").
 func NewFileSystemServer(fs FileSystem) fuse.Server {
 	return &fileSystemServer{
 		fs: fs,
@@ -236,6 +237,9 @@ func (s *fileSystemServer) handleOp(
 
 	case *fuseops.FallocateOp:
 		err = s.fs.Fallocate(ctx, typed)
+
+	case *fuseops.SyncFSOp:
+		err = s.fs.SyncFS(ctx, typed)
 	}
 
 	c.Reply(ctx, err)
